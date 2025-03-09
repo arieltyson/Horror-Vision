@@ -15,10 +15,21 @@ A Python application built with Flask and OpenCV, demonstrating real-time image 
 
 # The Python Solution to Real-Time Image Distortion 💻
 
-<div style="display: flex; border: 1px solid #ccc; padding: 10px; gap: 10px;">
-  <img width="450" alt="Screenshot 2025-03-08 at 20 23 04" src="https://github.com/user-attachments/assets/668d3a07-0998-446e-a9de-7ed68d2943f1" style="border: 1px solid #eee;"/>
-  <img width="450" alt="IMG_5559" src="https://github.com/user-attachments/assets/45129b02-1f0c-469a-b8b3-48d7d752a072" style="border: 1px solid #eee;"/>
+<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+  <div>
+    <img width="100%" alt="Screenshot 2025-03-08 at 21 26 58" src="https://github.com/user-attachments/assets/9091c834-730c-4d08-aa3e-b8ba84a0c3c0" style="border: 1px solid #eee;"/>
+  </div>
+  <div>
+    <img width="100%" alt="Screenshot 2025-03-08 at 21 26 05" src="https://github.com/user-attachments/assets/6d716926-6b99-4e2c-8742-9f1982565e5d" style="border: 1px solid #eee;"/>
+  </div>
+  <div>
+    <img width="100%" alt="Screenshot 2025-03-08 at 21 25 35" src="https://github.com/user-attachments/assets/4024e130-63e5-4cc4-a73f-92b454a3d5ee" style="border: 1px solid #eee;"/>
+  </div>
+  <div>
+    <img width="100%" alt="Screenshot 2025-03-08 at 21 25 50" src="https://github.com/user-attachments/assets/caf062cc-8adb-4c55-a02e-448ad08056bf" style="border: 1px solid #eee;"/>
+  </div>
 </div>
+
 
 ## Project Description 🗺️
 
