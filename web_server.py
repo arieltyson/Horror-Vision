@@ -18,50 +18,32 @@ def invert_colors(face):
     """Inverts the colors of the face region."""
     return cv2.bitwise_not(face)
 
-def swirl_face(face):
-    """Applies a swirl distortion effect to the face region."""
-    rows, cols, _ = face.shape
-    center_x, center_y = cols // 2, rows // 2
-    y, x = np.indices((rows, cols))
-    x = x - center_x
-    y = y - center_y
-    theta = np.arctan2(y, x)
-    radius = np.sqrt(x**2 + y**2)
-    swirl_strength = 0.05  # Increase for stronger effect
-    swirl_map_x = (center_x + radius * np.cos(theta + swirl_strength * radius)).astype(np.float32)
-    swirl_map_y = (center_y + radius * np.sin(theta + swirl_strength * radius)).astype(np.float32)
-    return cv2.remap(face, swirl_map_x, swirl_map_y, interpolation=cv2.INTER_LINEAR)
-
-def face_swap(face_img_path, frame, face_coords):
-    """Swaps the detected face with another face from a provided image file."""
-    face_img = cv2.imread(face_img_path, cv2.IMREAD_UNCHANGED)
-    x, y, w, h = face_coords
-    resized_face = cv2.resize(face_img, (w, h))
-    return resized_face
-
-def glitch_effect(face):
-    """Applies a glitch effect by shifting color channels."""
-    offset = np.random.randint(-100, 100)
-    # Split color channels
+def glitch_effect(face, multiplier):
+    """
+    Applies a glitch effect by shifting color channels.
+    The multiplier adjusts the intensity of the glitch.
+    """
+    multiplier = max(0, min(multiplier, 1))
+    intensity = int(10 + (multiplier ** 2) * 150)
     b, g, r = cv2.split(face)
     rows, cols = b.shape[:2]
-    M_pos = np.float32([[1, 0, offset], [0, 1, offset]])
-    M_neg = np.float32([[1, 0, -offset], [0, 1, -offset]])
+    M_pos = np.float32([[1, 0, np.random.randint(0, intensity)],
+                        [0, 1, np.random.randint(0, intensity)]])
+    M_neg = np.float32([[1, 0, np.random.randint(-intensity, 0)],
+                        [0, 1, np.random.randint(-intensity, 0)]])
     b_shifted = cv2.warpAffine(b, M_pos, (cols, rows))
     r_shifted = cv2.warpAffine(r, M_neg, (cols, rows))
-    # Merge channels (green remains unchanged)
-    glitched_face = cv2.merge((b_shifted, g, r_shifted))
-    return glitched_face
+    return cv2.merge((b_shifted, g, r_shifted))
 
 # ---- Main Processing Function ----
 
 def process_emotion_distortion(image):
     """
-    Detects faces and emotions in the image and applies distortions:
-      - "fear": glitch effect
+    Detects faces and emotions in the image and applies distortions based on emotion:
+      - "fear": apply glitch effect with the detected score
       - "happy": invert colors
-      - "angry": swirl effect
-      - "surprise": face swap (using a placeholder image 'photoStub.jpeg')
+      - "angry", "disgust", or "surprise": apply glitch effect with an amplified multiplier (score * 1.5)
+      - Otherwise, no change is applied.
     """
     # Load Haar Cascade for face detection
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -81,35 +63,30 @@ def process_emotion_distortion(image):
         face_roi = image[y:y+h, x:x+w]
         emotions = emotion_detector.detect_emotions(face_roi)
         textEmotion = "neutral"
-        face_modified = face_roi
+        score = 0
 
         if emotions and len(emotions) > 0 and "emotions" in emotions[0]:
-            # Get top emotion
             emotion, score = max(emotions[0]["emotions"].items(), key=lambda item: item[1])
             emotion = emotion.strip().lower()
             textEmotion = emotion
         else:
             textEmotion = "neutral"
 
-        # Apply distortions based on detected emotion
+        # Overlay the detected emotion text
+        cv2.putText(image, f"{textEmotion}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+
         if textEmotion == "fear":
-            face_modified = glitch_effect(face_roi)
+            face_modified = glitch_effect(face_roi, score)
+            face_modified = cv2.resize(face_modified, (w, h))
         elif textEmotion == "happy":
             face_modified = invert_colors(face_roi)
-        elif textEmotion == "angry":
-            face_modified = swirl_face(face_roi)
-        elif textEmotion == "surprise":
-            # Ensure 'photoStub.jpeg' exists in your project directory
-            face_modified = face_swap('photoStub.jpeg', image, (x, y, w, h))
+        elif textEmotion in ["angry", "disgust", "surprise"]:
+            face_modified = glitch_effect(face_roi, score * 1.5)
+            face_modified = cv2.resize(face_modified, (w, h))
         else:
             face_modified = face_roi  # No change for neutral or other emotions
 
-        # Overlay the detected emotion text
-        cv2.putText(image, f"{textEmotion}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-        # Resize modified face to fit the detected face region and replace
-        face_modified_resized = cv2.resize(face_modified, (w, h))
-        image[y:y+h, x:x+w] = face_modified_resized
-        # Draw a rectangle around the face
+        image[y:y+h, x:x+w] = face_modified
         cv2.rectangle(image, (x, y), (x+w, y+h), (0, 0, 0), 2)
 
     return image
