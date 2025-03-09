@@ -38,6 +38,10 @@ def barrel_distortion(image, k=0.1):
     distorted = cv2.remap(image, map_x, map_y, interpolation=cv2.INTER_LINEAR)
     return distorted
 
+@app.route('/')
+def index():
+    return "Welcome to CV Descent – the real-time image distortion application!"
+
 @app.route('/upload', methods=['POST'])
 def upload():
     # Ensure the file part is in the request
