@@ -2,7 +2,7 @@ import React from "react";
 import styles from "./loading-block.module.css";
 
 interface LoadingBlockProps {
-  spinnerActive: boolean;
+  spinnerActive: boolean | undefined;
 }
 
 export function LoadingBlock({ spinnerActive }: LoadingBlockProps) {

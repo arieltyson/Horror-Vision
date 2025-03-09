@@ -1,11 +1,11 @@
-// Main.tsx
 import React, { useRef, useState } from "react";
 import { ActionButton, Title, PhotosBlock } from "~/components";
 import styles from "./main.module.css";
 import Webcam from "react-webcam";
 
 export function Main() {
-  const [madness, setMadness] = useState<boolean>(false);
+  const [_, setMadness] = useState<boolean>(false);
+  const [distortedImageUrl, setDistortedImageUrl] = useState<string>("");
   const webcamRef = useRef<Webcam>(null);
 
   const capturePhoto = async () => {
@@ -23,13 +23,19 @@ export function Main() {
     if (!uploadResponse.ok) {
       throw new Error("Upload failed");
     }
-    await uploadResponse.json();
+    const distortedBlob = await uploadResponse.blob();
+    if (distortedBlob.size === 0) {
+      console.error("Received empty image blob");
+      return;
+    }
+    const url = URL.createObjectURL(distortedBlob);
+    setDistortedImageUrl(url);
   };
 
   return (
     <main className={styles.main}>
-      <Title title={madness ? "Descend into Madness" : "Maintain Sanity"} />
-      <PhotosBlock webcamRef={webcamRef} />
+      <Title title="Descend into Madness" />
+      <PhotosBlock webcamRef={webcamRef} distortedImageUrl={distortedImageUrl} />
       <ActionButton capturePhoto={capturePhoto} setMadness={setMadness} />
     </main>
   );
