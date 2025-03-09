@@ -4,6 +4,7 @@ from fer import FER
 
 def main():
     # Initialize webcam
+    
     cap = cv2.VideoCapture(0)
     retry_count = 5
 
@@ -59,14 +60,11 @@ def main():
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
             cv2.putText(frame, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
 
-        # Show the resulting frame
         cv2.imshow("Facial Expression Recognition", frame)
 
-        # Press 'q' to exit the loop
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-    # Release resources
     cap.release()
     cv2.destroyAllWindows()
 
