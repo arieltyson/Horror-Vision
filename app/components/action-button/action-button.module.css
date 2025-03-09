@@ -1,6 +1,6 @@
 /* Base styles for any button */
 .btnGeneric {
-    margin-top: 10vh;
+    margin-top: 15vh;
     padding: 1.5vh 2vw;
     transition: background 0.3s ease, box-shadow 0.3s ease, border-radius 0.3s ease;
 }
