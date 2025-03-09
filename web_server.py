@@ -110,7 +110,7 @@ def process_emotion_distortion(image):
         image[y:y+h, x:x+w] = face_modified
         cv2.rectangle(image, (x, y), (x+w, y+h), (0, 0, 0), 2)
 
-    return image, textEmotion
+    return image
 
 # ---- Flask Endpoints ----
 
