@@ -48,8 +48,9 @@ def main():
         # Draw rectangles around detected faces and display emotions
         for (x, y, w, h) in faces:
             face_roi = frame[y:y + h, x:x + w]  # Extract face region
-            face = swirl_face(face_roi)
-            frame[y:y + h, x:x + w] = face
+            face_coords = (x, y, w, h)
+            frame = face_swap('photoStub.jpeg', frame, face_coords)  # Pass face coordinates correctly
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 0), 2)
 
             # Draw face box and emotion text
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 0), 2)
@@ -80,6 +81,21 @@ def swirl_face(face):
     swirl_map_y = (center_y + radius * np.sin(theta + swirl_strength * radius)).astype(np.float32)
 
     return cv2.remap(face, swirl_map_x, swirl_map_y, interpolation=cv2.INTER_LINEAR)
+
+def face_swap(face_img_path, frame, face_coords):
+    """ Swaps the detected face with an external face image. """
+    face_img = cv2.imread(face_img_path, cv2.IMREAD_UNCHANGED)  # Load new face
+
+    if face_img is None:
+        print("❌ Error: Could not load face image.")
+        return frame  # Return original frame if face image is missing
+
+    if face_coords:
+        x, y, w, h = face_coords
+        resized_face = cv2.resize(face_img, (w, h))
+        frame[y:y+h, x:x+w] = resized_face
+
+    return frame
 
 if __name__ == "__main__":
     main()
