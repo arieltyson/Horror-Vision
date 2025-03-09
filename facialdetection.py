@@ -45,11 +45,28 @@ def main():
         # Analyze emotions
         results = emotion_detector.detect_emotions(frame)
 
-        # Draw rectangles around detected faces and display emotions
+        # Draw rectangles around detected faces, and add distortions
         for (x, y, w, h) in faces:
             face_roi = frame[y:y + h, x:x + w]  # Extract face region
-            face_coords = (x, y, w, h)
-            frame = face_swap('photoStub.jpeg', frame, face_coords)  # Pass face coordinates correctly
+            emotions = emotion_detector.detect_emotions(face_roi)
+
+            if emotions:
+                emotion, score = max(emotions[0]["emotions"].items(), key=lambda item: item[1])  # Get top emotion
+                emotion = emotion.strip().lower()  # Ensure consistency
+                text = f"{emotion} ({round(score * 100)}%)"
+            else:
+                text = "No emotion detected"
+
+            cv2.putText(frame, f"{text}", (x, y - 10),cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+            
+            face = glitch_effect(face_roi)
+            face = cv2.resize(face, (w, h))
+
+
+            #face = swirl_face(face_roi)
+            frame[y:y + h, x:x + w] = face
+            #face_coords = (x, y, w, h)
+            #frame = face_swap('photoStub.jpeg', frame, face_coords)  # Pass face coordinates correctly
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 0), 2)
 
             # Draw face box and emotion text
@@ -96,6 +113,24 @@ def face_swap(face_img_path, frame, face_coords):
         frame[y:y+h, x:x+w] = resized_face
 
     return frame
+
+def glitch_effect(face):
+    offset = np.random.randint(-100, 100)
+
+    # Split color channels
+    b, g, r = cv2.split(face)
+
+    rows, cols = b.shape[:2]
+    M_pos = np.float32([[1, 0, offset], [0, 1, offset]])
+    M_neg = np.float32([[1, 0, -offset], [0, 1, -offset]])
+
+    b_shifted = cv2.warpAffine(b, M_pos, (cols, rows))
+    r_shifted = cv2.warpAffine(r, M_neg, (cols, rows))
+
+    # Merge channels without shifting green
+    glitched_face = cv2.merge((b_shifted, g, r_shifted))
+    return glitched_face
+
 
 if __name__ == "__main__":
     main()
