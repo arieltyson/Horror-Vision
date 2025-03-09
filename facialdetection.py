@@ -72,12 +72,9 @@ def main():
                 face = cv2.resize(face, (w, h))
             elif(textEmotion == "happy"):
                 face = invert_colors(face_roi)
-            elif(textEmotion == "angry" or textEmotion == "disgust"):
+            elif(textEmotion == "angry" or textEmotion == "disgust" or textEmotion == "surprise"):
                 face = glitch_effect(face_roi, score*1.5)
                 face = cv2.resize(face, (w, h))
-            elif(textEmotion == "surprise"):
-                face_coords = (x, y, w, h)
-                face = face_swap('photoStub.jpeg', frame, face_coords)
 
             frame[y:y + h, x:x + w] = face
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 0), 2)
