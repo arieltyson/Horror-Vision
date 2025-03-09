@@ -72,7 +72,7 @@ def main():
                 face = cv2.resize(face, (w, h))
             elif(textEmotion == "happy"):
                 face = invert_colors(face_roi)
-            elif(textEmotion == "angry" or textEmotion == "disgust" or textEmotion == "surprise"):
+            elif(textEmotion == "angry" or textEmotion == "disgust" or textEmotion == "surprise" or textEmotion == "sad"):
                 face = glitch_effect(face_roi, score*1.5)
                 face = cv2.resize(face, (w, h))
 
