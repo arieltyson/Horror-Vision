@@ -71,7 +71,7 @@ CV Descent is a backend application that processes images in real time. It recei
     ```
 5.	**Run the Application:**
     ```bash
-    python3 web_server.py
+    python3 facialdetection.py
     ```
 
 ### Prerequisites 📋
