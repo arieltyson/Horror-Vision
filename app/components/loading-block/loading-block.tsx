@@ -15,7 +15,7 @@ export function LoadingBlock({ spinnerActive }: LoadingBlockProps) {
       )}
 
       <div className={styles.innerBlock}>
-        <div className={styles.infoText}>?</div>
+        <div className={styles.infoText}>Your emotion</div>
       </div>
     </div>
   );

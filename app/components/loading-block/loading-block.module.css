@@ -22,7 +22,7 @@
 .loaderArc circle {
     fill: none;
     stroke: rgba(22, 53, 142, 0.96);
-    stroke-width: 7px;
+    stroke-width: 9px;
     stroke-linecap: round;
     stroke-dasharray: 534;
     stroke-dashoffset: 400;
@@ -57,7 +57,7 @@
 .infoText {
     color: #1E1E1E;
     font-family: Mulish, sans-serif;
-    font-size: 35px;
+    font-size: 15px;
     font-weight: 700;
     line-height: normal;
 }
