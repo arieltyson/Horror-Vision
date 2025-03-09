@@ -109,7 +109,7 @@ def swirl_face(face):
     return cv2.remap(face, swirl_map_x, swirl_map_y, interpolation=cv2.INTER_LINEAR)
 
 def face_swap(face_img_path, frame, face_coords):
-    face_img = cv2.imread(face_img_path, cv2.IMREAD_UNCHANGED)  # Load new face
+    face_img = cv2.imread(face_img_path, cv2.IMREAD_UNCHANGED) 
     x, y, w, h = face_coords
     resized_face = cv2.resize(face_img, (w, h))
 
