@@ -1,22 +1,25 @@
+// ActionButton.tsx
 import React, { useState } from "react";
 import styles from "./action-button.module.css";
 
 interface ActionButtonProps {
-  setSpinnerActive: React.Dispatch<React.SetStateAction<boolean>>;
+  capturePhoto: () => void | Promise<void>;
+  setMadness: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export function ActionButton({ setSpinnerActive }: ActionButtonProps) {
-  const [repeatState, setRepeatState] = useState<boolean>(false);
-  const [matchValue, setMatchValue] = useState<number>(51);
+export function ActionButton({ capturePhoto, setMadness }: ActionButtonProps) {
+  const [repeatState, setRepeatState] = useState(false);
+  const [matchValue, setMatchValue] = useState(51);
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (!repeatState) {
       const randomVal = Math.floor(Math.random() * 100);
       setMatchValue(randomVal);
-      setSpinnerActive(true);
+      await capturePhoto();
+      setMadness(true);
     } else {
       setMatchValue(51);
-      setSpinnerActive(false);
+      setMadness(false);
     }
     setRepeatState(!repeatState);
   };
