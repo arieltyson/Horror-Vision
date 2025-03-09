@@ -53,6 +53,8 @@ def main():
             textEmotion = "neutral"
 
             face = face_roi  # Default to original face
+
+            score = 0
             
             if emotions:
                 emotion, score = max(emotions[0]["emotions"].items(), key=lambda item: item[1])  # Get top emotion
@@ -65,12 +67,14 @@ def main():
             cv2.putText(frame, f"{text}", (x, y - 10),cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
             if(textEmotion == "fear"):
-                face = glitch_effect(face_roi)
+                #face = swirl_face(face, score)
+                face = glitch_effect(face_roi, score)
                 face = cv2.resize(face, (w, h))
             elif(textEmotion == "happy"):
                 face = invert_colors(face_roi)
-            elif(textEmotion == "angry"):
-                face = swirl_face(face)
+            elif(textEmotion == "angry" or textEmotion == "disgust"):
+                face = glitch_effect(face_roi, score*1.5)
+                face = cv2.resize(face, (w, h))
             elif(textEmotion == "surprise"):
                 face_coords = (x, y, w, h)
                 face = face_swap('photoStub.jpeg', frame, face_coords)
@@ -92,7 +96,7 @@ def main():
 def invert_colors(face):
     return cv2.bitwise_not(face)
 
-def swirl_face(face):
+def swirl_face(face, multiplier):
     rows, cols, _ = face.shape
     center_x, center_y = cols // 2, rows // 2
 
@@ -102,7 +106,7 @@ def swirl_face(face):
     theta = np.arctan2(y, x)
     radius = np.sqrt(x**2 + y**2)
 
-    swirl_strength = 0.05  # Increase for stronger effect
+    swirl_strength = 0.05*multiplier  # Increase for stronger effect
     swirl_map_x = (center_x + radius * np.cos(theta + swirl_strength * radius)).astype(np.float32)
     swirl_map_y = (center_y + radius * np.sin(theta + swirl_strength * radius)).astype(np.float32)
 
@@ -115,22 +119,19 @@ def face_swap(face_img_path, frame, face_coords):
 
     return resized_face
 
-def glitch_effect(face):
-    offset = np.random.randint(-100, 100)
+def glitch_effect(face, multiplier):
+    multiplier = max(0, min(multiplier, 1))
+    intensity = int(10 + (multiplier ** 2) * 150)
 
-    # Split color channels
     b, g, r = cv2.split(face)
-
     rows, cols = b.shape[:2]
-    M_pos = np.float32([[1, 0, offset], [0, 1, offset]])
-    M_neg = np.float32([[1, 0, -offset], [0, 1, -offset]])
+    M_pos = np.float32([[1, 0, np.random.randint(0, intensity)], [0, 1, np.random.randint(0, intensity)]])
+    M_neg = np.float32([[1, 0, np.random.randint(-intensity, 0)], [0, 1, np.random.randint(-intensity, 0)]])
 
     b_shifted = cv2.warpAffine(b, M_pos, (cols, rows))
     r_shifted = cv2.warpAffine(r, M_neg, (cols, rows))
 
-    # Merge channels without shifting green
-    glitched_face = cv2.merge((b_shifted, g, r_shifted))
-    return glitched_face
+    return cv2.merge((b_shifted, g, r_shifted))
 
 
 if __name__ == "__main__":
