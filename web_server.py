@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import io
 import logging
+from fer import FER  # For emotion detection
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -11,37 +12,109 @@ CORS(app)  # Enable CORS for all routes
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 
-def barrel_distortion(image, k=0.1):
-    app.logger.info("Starting barrel distortion with k=%s", k)
-    h, w = image.shape[:2]
-    app.logger.info("Input image dimensions: %sx%s", w, h)
-    
-    # Create a coordinate grid for mapping
-    x, y = np.meshgrid(np.arange(w), np.arange(h))
-    x_c = w / 2
-    y_c = h / 2
-    
-    # Normalize coordinates to center of image
-    x_norm = (x - x_c) / x_c
-    y_norm = (y - y_c) / y_c
-    
-    # Compute radial distance from center
-    r = np.sqrt(x_norm**2 + y_norm**2)
-    
-    # Apply the distortion factor
-    factor = 1 + k * r**2
-    
-    # Compute new coordinates
-    x_distorted = x_c + x_norm * x_c * factor
-    y_distorted = y_c + y_norm * y_c * factor
+# ---- Distortion Helper Functions ----
 
-    map_x = x_distorted.astype(np.float32)
-    map_y = y_distorted.astype(np.float32)
-    
-    # Remap the original image to the new coordinates
-    distorted = cv2.remap(image, map_x, map_y, interpolation=cv2.INTER_LINEAR)
-    app.logger.info("Finished applying barrel distortion")
-    return distorted
+def invert_colors(face):
+    """Inverts the colors of the face region."""
+    return cv2.bitwise_not(face)
+
+def swirl_face(face):
+    """Applies a swirl distortion effect to the face region."""
+    rows, cols, _ = face.shape
+    center_x, center_y = cols // 2, rows // 2
+    y, x = np.indices((rows, cols))
+    x = x - center_x
+    y = y - center_y
+    theta = np.arctan2(y, x)
+    radius = np.sqrt(x**2 + y**2)
+    swirl_strength = 0.05  # Increase for stronger effect
+    swirl_map_x = (center_x + radius * np.cos(theta + swirl_strength * radius)).astype(np.float32)
+    swirl_map_y = (center_y + radius * np.sin(theta + swirl_strength * radius)).astype(np.float32)
+    return cv2.remap(face, swirl_map_x, swirl_map_y, interpolation=cv2.INTER_LINEAR)
+
+def face_swap(face_img_path, frame, face_coords):
+    """Swaps the detected face with another face from a provided image file."""
+    face_img = cv2.imread(face_img_path, cv2.IMREAD_UNCHANGED)
+    x, y, w, h = face_coords
+    resized_face = cv2.resize(face_img, (w, h))
+    return resized_face
+
+def glitch_effect(face):
+    """Applies a glitch effect by shifting color channels."""
+    offset = np.random.randint(-100, 100)
+    # Split color channels
+    b, g, r = cv2.split(face)
+    rows, cols = b.shape[:2]
+    M_pos = np.float32([[1, 0, offset], [0, 1, offset]])
+    M_neg = np.float32([[1, 0, -offset], [0, 1, -offset]])
+    b_shifted = cv2.warpAffine(b, M_pos, (cols, rows))
+    r_shifted = cv2.warpAffine(r, M_neg, (cols, rows))
+    # Merge channels (green remains unchanged)
+    glitched_face = cv2.merge((b_shifted, g, r_shifted))
+    return glitched_face
+
+# ---- Main Processing Function ----
+
+def process_emotion_distortion(image):
+    """
+    Detects faces and emotions in the image and applies distortions:
+      - "fear": glitch effect
+      - "happy": invert colors
+      - "angry": swirl effect
+      - "surprise": face swap (using a placeholder image 'photoStub.jpeg')
+    """
+    # Load Haar Cascade for face detection
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    if face_cascade.empty():
+        app.logger.error("Could not load face cascade classifier.")
+        return image
+
+    # Initialize FER emotion detector
+    emotion_detector = FER()
+
+    # Convert image to grayscale for face detection
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+    app.logger.info("Detected %d faces", len(faces))
+
+    for (x, y, w, h) in faces:
+        face_roi = image[y:y+h, x:x+w]
+        emotions = emotion_detector.detect_emotions(face_roi)
+        textEmotion = "neutral"
+        face_modified = face_roi
+
+        if emotions and len(emotions) > 0 and "emotions" in emotions[0]:
+            # Get top emotion
+            emotion, score = max(emotions[0]["emotions"].items(), key=lambda item: item[1])
+            emotion = emotion.strip().lower()
+            textEmotion = emotion
+        else:
+            textEmotion = "neutral"
+
+        # Apply distortions based on detected emotion
+        if textEmotion == "fear":
+            face_modified = glitch_effect(face_roi)
+        elif textEmotion == "happy":
+            face_modified = invert_colors(face_roi)
+        elif textEmotion == "angry":
+            face_modified = swirl_face(face_roi)
+        elif textEmotion == "surprise":
+            # Ensure 'photoStub.jpeg' exists in your project directory
+            face_modified = face_swap('photoStub.jpeg', image, (x, y, w, h))
+        else:
+            face_modified = face_roi  # No change for neutral or other emotions
+
+        # Overlay the detected emotion text
+        cv2.putText(image, f"{textEmotion}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+        # Resize modified face to fit the detected face region and replace
+        face_modified_resized = cv2.resize(face_modified, (w, h))
+        image[y:y+h, x:x+w] = face_modified_resized
+        # Draw a rectangle around the face
+        cv2.rectangle(image, (x, y), (x+w, y+h), (0, 0, 0), 2)
+
+    return image
+
+# ---- Flask Endpoints ----
 
 @app.route('/')
 def index():
@@ -55,9 +128,8 @@ def upload():
     if 'file' not in request.files:
         app.logger.error("No file part in the request")
         return jsonify({"error": "No file part in the request"}), 400
-    
+
     file = request.files['file']
-    
     if file.filename == '':
         app.logger.error("No selected file")
         return jsonify({"error": "No selected file"}), 400
@@ -75,8 +147,8 @@ def upload():
         
         app.logger.info("Image decoded successfully: shape=%s", img_cv.shape)
         
-        # Apply distortion
-        distorted_img = barrel_distortion(img_cv, k=0.1)
+        # Process the image with emotion-based distortions
+        distorted_img = process_emotion_distortion(img_cv)
         
         app.logger.info("Encoding distorted image")
         ret, buffer = cv2.imencode('.jpg', distorted_img)
