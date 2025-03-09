@@ -120,12 +120,13 @@ def face_swap(face_img_path, frame, face_coords):
     return resized_face
 
 def glitch_effect(face, multiplier):
-    offset = int(multiplier * 50)  # Scale glitch effect
+    multiplier = max(0, min(multiplier, 1))
+    intensity = int(10 + (multiplier ** 2) * 150)
 
     b, g, r = cv2.split(face)
     rows, cols = b.shape[:2]
-    M_pos = np.float32([[1, 0, offset], [0, 1, offset]])
-    M_neg = np.float32([[1, 0, -offset], [0, 1, -offset]])
+    M_pos = np.float32([[1, 0, np.random.randint(0, intensity)], [0, 1, np.random.randint(0, intensity)]])
+    M_neg = np.float32([[1, 0, np.random.randint(-intensity, 0)], [0, 1, np.random.randint(-intensity, 0)]])
 
     b_shifted = cv2.warpAffine(b, M_pos, (cols, rows))
     r_shifted = cv2.warpAffine(r, M_neg, (cols, rows))
