@@ -1,16 +1,19 @@
-import React from 'react'
-import styles from './photos-block.module.css'
-import {WebcamBlock} from "~/components";
-import AiBlock from "~/components/ai-block/ai-block";
+import React from 'react';
+import styles from './photos-block.module.css';
+import { WebcamBlock, AiBlock, LoadingBlock } from "~/components";
 
-const PhotosBlock = () => {
+interface PhotosBlockProps {
+  spinnerActive: boolean;
+}
+
+const PhotosBlock = ({ spinnerActive }: PhotosBlockProps) => {
   return (
     <div className={styles.photosBlock}>
       <WebcamBlock />
-      {/*<LoadingBlock />*/}
+      <LoadingBlock spinnerActive={spinnerActive} />
       <AiBlock />
     </div>
-  )
+  );
 }
 
-export default PhotosBlock
+export default PhotosBlock;

@@ -1,16 +1,17 @@
-import {useState} from "react";
-import {ActionButton, Title} from "~/components";
-import styles from "./main.module.css"
-import PhotosBlock from "~/components/photos-block/photos-block";
+import React, { useState } from "react";
+import { ActionButton, Title, PhotosBlock } from "~/components";
+import styles from "./main.module.css";
 
 export function Main() {
-  const madnessState = useState(true);
+  const [spinnerActive, setSpinnerActive] = useState<boolean>(false);
 
   return (
     <main className={styles.main}>
-      <Title title={madnessState ? 'Descend into Madness' : 'Maintain Sanity'}/>
-      <PhotosBlock/>
-      <ActionButton/>
+      <Title title='Descend into Madness' />
+      <PhotosBlock spinnerActive={spinnerActive} />
+      <ActionButton setSpinnerActive={setSpinnerActive} />
     </main>
   );
 }
+
+export default Main;

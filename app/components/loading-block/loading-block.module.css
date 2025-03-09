@@ -1,0 +1,63 @@
+.loadingBlock {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border-radius: 160px;
+    background: #E8E8E8;
+    box-shadow:
+            -6.4px -6.4px 16px 0 rgba(255, 255, 255, 0.50) inset,
+            6.4px  6.4px 16px 0 rgba(22, 25, 36, 0.15) inset,
+            6.4px  6.4px 16px 0 rgba(22, 25, 36, 0.10);
+}
+
+.loaderArc {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 200px;
+    animation: spin 1s linear infinite;
+}
+
+.loaderArc circle {
+    fill: none;
+    stroke: rgba(22, 53, 142, 0.96);
+    stroke-width: 7px;
+    stroke-linecap: round;
+    stroke-dasharray: 534;
+    stroke-dashoffset: 400;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.innerBlock {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 143.896px;
+    height: 143.896px;
+    border-radius: 160px;
+    background: linear-gradient(
+            133deg,
+            #EFF2F7 47.78%,
+            rgba(201, 210, 226, 0.40) 86.98%
+    );
+    box-shadow: 8px 8px 48px 0 rgba(22, 25, 36, 0.20);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: black;
+}
+
+.infoText {
+    color: #1E1E1E;
+    font-family: Mulish, sans-serif;
+    font-size: 35px;
+    font-weight: 700;
+    line-height: normal;
+}

@@ -1,21 +1,26 @@
-import React, { useState } from 'react';
-import styles from './action-button.module.css';
+import React, { useState } from "react";
+import styles from "./action-button.module.css";
 
-export function ActionButton() {
-  const [repeatState, setRepeatState] = useState(false);
-  const [matchValue, setMatchValue] = useState(51);
+interface ActionButtonProps {
+  setSpinnerActive: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export function ActionButton({ setSpinnerActive }: ActionButtonProps) {
+  const [repeatState, setRepeatState] = useState<boolean>(false);
+  const [matchValue, setMatchValue] = useState<number>(51);
 
   const handleClick = () => {
     if (!repeatState) {
       const randomVal = Math.floor(Math.random() * 100);
       setMatchValue(randomVal);
+      setSpinnerActive(true);
     } else {
       setMatchValue(51);
+      setSpinnerActive(false);
     }
     setRepeatState(!repeatState);
   };
 
-  // Decide which variant class to apply based on state
   let variantClass = styles.btnDefault;
   if (repeatState) {
     variantClass = matchValue > 50 ? styles.btnGreen : styles.btnRed;
