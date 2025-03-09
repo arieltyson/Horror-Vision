@@ -49,13 +49,14 @@ def main():
         for (x, y, w, h) in faces:
             face_roi = frame[y:y + h, x:x + w]  # Extract face region
             emotions = emotion_detector.detect_emotions(face_roi)
-
+            
+            #Default values
             textEmotion = "neutral"
+            score = 0
 
             face = face_roi  # Default to original face
-
-            score = 0
             
+            # Detects emotion using openCV
             if emotions:
                 emotion, score = max(emotions[0]["emotions"].items(), key=lambda item: item[1])  # Get top emotion
                 emotion = emotion.strip().lower()  # Ensure consistency
@@ -64,22 +65,19 @@ def main():
             else:
                 text = "No emotion detected"
 
+            #Display emotion data
             cv2.putText(frame, f"{text}", (x, y - 10),cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
-            if(textEmotion == "fear"):
+            #Cases for detected emotions
+            if(textEmotion == "fear" or textEmotion == "angry" or textEmotion == "disgust" or textEmotion == "surprise" or textEmotion == "sad"):
                 #face = swirl_face(face, score)
-                face = glitch_effect(face_roi, score)
+                face = glitch_effect(face_roi, score*1.5)
                 face = cv2.resize(face, (w, h))
             elif(textEmotion == "happy"):
                 face = invert_colors(face_roi)
-            elif(textEmotion == "angry" or textEmotion == "disgust" or textEmotion == "surprise" or textEmotion == "sad"):
-                face = glitch_effect(face_roi, score*1.5)
-                face = cv2.resize(face, (w, h))
 
+            #Display distorted face on position of detected face
             frame[y:y + h, x:x + w] = face
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 0), 2)
-
-            # Draw face box and emotion text
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 0), 2)
 
         cv2.imshow("Facial Expression Recognition", frame)
@@ -90,9 +88,11 @@ def main():
     cap.release()
     cv2.destroyAllWindows()
 
+#Inverts colors of detected face
 def invert_colors(face):
     return cv2.bitwise_not(face)
 
+#Swirls face of face
 def swirl_face(face, multiplier):
     rows, cols, _ = face.shape
     center_x, center_y = cols // 2, rows // 2
@@ -109,13 +109,14 @@ def swirl_face(face, multiplier):
 
     return cv2.remap(face, swirl_map_x, swirl_map_y, interpolation=cv2.INTER_LINEAR)
 
+#Face_swap
 def face_swap(face_img_path, frame, face_coords):
     face_img = cv2.imread(face_img_path, cv2.IMREAD_UNCHANGED) 
     x, y, w, h = face_coords
     resized_face = cv2.resize(face_img, (w, h))
 
     return resized_face
-
+#Glitch effect with multiplier
 def glitch_effect(face, multiplier):
     multiplier = max(0, min(multiplier, 1))
     intensity = int(10 + (multiplier ** 2) * 150)
