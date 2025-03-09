@@ -1,10 +1,12 @@
-from flask import Flask, request, Response, jsonify
+from flask import Flask, request, Response, jsonify, send_file
+from flask_cors import CORS
 import cv2
 import numpy as np
 import io
 import logging
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -84,11 +86,24 @@ def upload():
         
         app.logger.info("Encoded image size: %d bytes", buffer.size)
         
-        # Return the distorted image using Response
+        # Save the distorted image locally for debugging (test_image.jpg)
+        with open('test_image.jpg', 'wb') as f:
+            f.write(buffer.tobytes())
+        app.logger.info("Saved distorted image locally as test_image.jpg")
+        
         app.logger.info("Sending distorted image back to client")
         return Response(buffer.tobytes(), mimetype='image/jpeg')
     except Exception as e:
         app.logger.exception("An error occurred while processing the image")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/test_image', methods=['GET'])
+def test_image():
+    try:
+        app.logger.info("Serving test_image.jpg")
+        return send_file('test_image.jpg', mimetype='image/jpeg')
+    except Exception as e:
+        app.logger.exception("Error serving test image")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
