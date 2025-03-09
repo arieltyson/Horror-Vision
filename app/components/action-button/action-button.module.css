@@ -1,0 +1,33 @@
+/* Base styles for any button */
+.btnGeneric {
+    margin-top: 10vh;
+    padding: 1.5vh 2vw;
+    transition: background 0.3s ease, box-shadow 0.3s ease, border-radius 0.3s ease;
+}
+
+/* Default button styles */
+.btnDefault {
+    border-radius: 15px;
+    background: #1E1E1E;
+    box-shadow: 0 20px 13px 0 rgba(30, 30, 30, 0.04),
+    0 8.148px 6.519px 0 rgba(30, 30, 30, 0.03),
+    0 1.852px 3.148px 0 rgba(30, 30, 30, 0.02);
+}
+
+/* Red variant styles */
+.btnRed {
+    border-radius: 15px;
+    background: linear-gradient(154deg, #641212 30.87%, #DC5A5A 85.78%), #CC8D36;
+    box-shadow: 0 20px 13px 0 rgba(204, 141, 54, 0.04),
+    0 8.148px 6.519px 0 rgba(204, 141, 54, 0.03),
+    0 1.852px 3.148px 0 rgba(204, 141, 54, 0.02);
+}
+
+/* Green variant styles */
+.btnGreen {
+    border-radius: 15px;
+    background: linear-gradient(154deg, #12642D 30.87%, #5EE48A 85.78%);
+    box-shadow: 0 20px 13px 0 rgba(204, 141, 54, 0.04),
+    0 8.148px 6.519px 0 rgba(204, 141, 54, 0.03),
+    0 1.852px 3.148px 0 rgba(204, 141, 54, 0.02);
+}
