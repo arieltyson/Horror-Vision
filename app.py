@@ -173,11 +173,11 @@ HTML_PAGE = """
     <h1>Live Video Feeds</h1>
     <div class="video-container">
         <div>
-            <h3>Normal Feed</h3>
+            <h3>Sanity</h3>
             <img src="/normal_video" alt="Normal Feed">
         </div>
         <div>
-            <h3>Distorted Feed</h3>
+            <h3>Madness</h3>
             <img src="/distorted_video" alt="Distorted Feed">
         </div>
     </div>
