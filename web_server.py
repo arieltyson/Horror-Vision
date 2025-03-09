@@ -35,14 +35,34 @@ def glitch_effect(face, multiplier):
     r_shifted = cv2.warpAffine(r, M_neg, (cols, rows))
     return cv2.merge((b_shifted, g, r_shifted))
 
+# (Optional: Retained in case needed for future effects)
+def swirl_face(face, multiplier):
+    rows, cols, _ = face.shape
+    center_x, center_y = cols // 2, rows // 2
+    y, x = np.indices((rows, cols))
+    x = x - center_x
+    y = y - center_y
+    theta = np.arctan2(y, x)
+    radius = np.sqrt(x**2 + y**2)
+    swirl_strength = 0.05 * multiplier
+    swirl_map_x = (center_x + radius * np.cos(theta + swirl_strength * radius)).astype(np.float32)
+    swirl_map_y = (center_y + radius * np.sin(theta + swirl_strength * radius)).astype(np.float32)
+    return cv2.remap(face, swirl_map_x, swirl_map_y, interpolation=cv2.INTER_LINEAR)
+
+def face_swap(face_img_path, frame, face_coords):
+    face_img = cv2.imread(face_img_path, cv2.IMREAD_UNCHANGED)
+    x, y, w, h = face_coords
+    resized_face = cv2.resize(face_img, (w, h))
+    return resized_face
+
 # ---- Main Processing Function ----
 
 def process_emotion_distortion(image):
     """
     Detects faces and emotions in the image and applies distortions based on emotion:
-      - "fear": apply glitch effect with the detected score
-      - "happy": invert colors
-      - "angry", "disgust", or "surprise": apply glitch effect with an amplified multiplier (score * 1.5)
+      - "fear": glitch effect with raw score.
+      - "happy": invert colors.
+      - "angry", "disgust", "surprise", or "sad": glitch effect with amplified multiplier (score * 1.5).
       - Otherwise, no change is applied.
     """
     # Load Haar Cascade for face detection
@@ -73,14 +93,15 @@ def process_emotion_distortion(image):
             textEmotion = "neutral"
 
         # Overlay the detected emotion text
-        cv2.putText(image, f"{textEmotion}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+        cv2.putText(image, f"{textEmotion}", (x, y - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
         if textEmotion == "fear":
             face_modified = glitch_effect(face_roi, score)
             face_modified = cv2.resize(face_modified, (w, h))
         elif textEmotion == "happy":
             face_modified = invert_colors(face_roi)
-        elif textEmotion in ["angry", "disgust", "surprise"]:
+        elif textEmotion in ["angry", "disgust", "surprise", "sad"]:
             face_modified = glitch_effect(face_roi, score * 1.5)
             face_modified = cv2.resize(face_modified, (w, h))
         else:
