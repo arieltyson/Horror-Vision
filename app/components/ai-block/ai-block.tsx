@@ -1,10 +1,14 @@
 import React from "react";
 import styles from "./ai-block.module.css";
 
-export function AiBlock() {
+interface AiBlockProps {
+  distortedImageUrl: string;
+}
+
+export function AiBlock({ distortedImageUrl }: AiBlockProps) {
   return (
     <div className={styles.camera}>
-      <img  src="../../../public/img/photoStub.jpeg" alt="AI Block" />
+      <img src={distortedImageUrl || "../../../public/img/photoStub.jpeg"} alt="AI Block" />
     </div>
   );
 }
