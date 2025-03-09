@@ -1,0 +1,11 @@
+.title {
+    color: #1E1E1E;
+    text-align: center;
+    font-variant-numeric: lining-nums tabular-nums;
+    font-family: "Mulish", sans-serif;
+    font-size: 32px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 100%;
+    margin-top: 10vh;
+}
