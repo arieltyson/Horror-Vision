@@ -1,6 +1,7 @@
 import cv2
 import time
 from fer import FER
+import numpy as np
 
 def main():
     # Initialize webcam
@@ -47,18 +48,11 @@ def main():
         # Draw rectangles around detected faces and display emotions
         for (x, y, w, h) in faces:
             face_roi = frame[y:y + h, x:x + w]  # Extract face region
-
-            # Get the most likely emotion
-            emotions = emotion_detector.detect_emotions(face_roi)
-            if emotions:
-                emotion, score = max(emotions[0]["emotions"].items(), key=lambda item: item[1])  # Get top emotion
-                text = f"{emotion} ({round(score * 100)}%)"
-            else:
-                text = "No emotion detected"
+            face = swirl_face(face_roi)
+            frame[y:y + h, x:x + w] = face
 
             # Draw face box and emotion text
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            cv2.putText(frame, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 0), 2)
 
         cv2.imshow("Facial Expression Recognition", frame)
 
@@ -67,6 +61,25 @@ def main():
 
     cap.release()
     cv2.destroyAllWindows()
+
+def invert_colors(face):
+    return cv2.bitwise_not(face)
+
+def swirl_face(face):
+    rows, cols, _ = face.shape
+    center_x, center_y = cols // 2, rows // 2
+
+    y, x = np.indices((rows, cols))
+    x = x - center_x
+    y = y - center_y
+    theta = np.arctan2(y, x)
+    radius = np.sqrt(x**2 + y**2)
+
+    swirl_strength = 0.05  # Increase for stronger effect
+    swirl_map_x = (center_x + radius * np.cos(theta + swirl_strength * radius)).astype(np.float32)
+    swirl_map_y = (center_y + radius * np.sin(theta + swirl_strength * radius)).astype(np.float32)
+
+    return cv2.remap(face, swirl_map_x, swirl_map_y, interpolation=cv2.INTER_LINEAR)
 
 if __name__ == "__main__":
     main()
